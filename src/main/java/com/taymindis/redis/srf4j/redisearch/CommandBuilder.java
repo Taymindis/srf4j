@@ -43,7 +43,7 @@ public abstract class CommandBuilder {
         return this;
     }
 
-    /**
+    /*
      Danger query is trying to query by ownself writing without following DOCS.
      This is only suggested when you have something advance but couldn't find from DOCS.
      * @param v

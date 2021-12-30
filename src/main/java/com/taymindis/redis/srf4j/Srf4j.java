@@ -182,7 +182,7 @@ public class Srf4j {
     }
 
 
-    /**
+    /*
      * Sentinels is a monitor of master health, it will delegate to failed master role failover
      * to other slave to become master, so that whoever using this facade will not be down until
      * all master&slave down
