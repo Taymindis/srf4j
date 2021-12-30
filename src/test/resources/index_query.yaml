@@ -1,0 +1,89 @@
+autoload: true
+dbConfig:
+  dbUrl: jdbc:mysql://localhost:3306/retailer
+  driver: com.mysql.jdbc.Driver
+  databaseName: retailer
+  user: root
+  password: pass
+indexName: retailer
+queries:
+    - indexPrefix:
+        - cust
+      identityNames: custid
+      indexableFields:
+        - name: firstName
+          type: TEXT
+        - name: lastName
+          type: TEXT
+        - name: custId
+          type: TAG
+      sql: |
+        select custId, firstName, lastName, phone, city from customer
+    - indexPrefix:
+        - order
+      identityNames: orderId
+      indexableFields:
+        - name: custId
+          type: TAG
+        - name: status
+          type: TEXT
+        - name: orderId
+          type: TAG
+        - name: orderDate
+          type: NUMERIC
+          opts:
+            - SORTABLE
+        - name: shippedDate
+          type: NUMERIC
+          opts:
+            - SORTABLE
+        - name: comments
+          type: TEXT
+      sql: |
+        select orderId, orderDate, status, custId, shippedDate, comments from orders
+    - indexPrefix:
+        - orderDetail
+      identityNames: orderId,productCode
+      indexableFields:
+        - name: orderId
+          type: TAG
+        - name: productCode
+          type: TAG
+        - name: qtyOrdered
+          type: NUMERIC
+          opts:
+            - SORTABLE
+        - name: priceEach
+          type: NUMERIC
+          opts:
+            - SORTABLE
+      sql: select orderId, productCode, qtyOrdered, priceEach from orderdetails
+    - indexPrefix:
+        - cust
+        - order
+        - orderDetail
+      indexAlias: custOrders
+      identityNames: custId,orderId
+      indexableFields:
+        - name: custId
+          type: TAG
+        - name: firstName
+          type: TEXT
+        - name: lastName
+          type: TEXT
+        - name: orderId
+          type: TAG
+        - name: orderDate
+          type: NUMERIC
+          opts:
+            - SORTABLE
+        - name: shippedDate
+          type: NUMERIC
+          opts:
+            - SORTABLE
+        - name: comments
+          type: TEXT
+        - name: country
+          type: TAG
+        - name: productCode
+          type: TAG
