@@ -13,6 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Date;
@@ -203,12 +206,11 @@ public class Srf4j {
                 redisFacade instanceof LettuClusterFacadeImpl)) {
             throw new IllegalArgumentException("client is not using lettuce driver");
         }
-        try {
-            File file = getFile(configPath);
+        try(InputStream stream = getFile(configPath)) {
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
             mapper.findAndRegisterModules();
-            IndexCfg indexCfg = mapper.readValue(file, IndexCfg.class);
+            IndexCfg indexCfg = mapper.readValue(stream, IndexCfg.class);
 
             if (!indexCfg.isAutoload()) {
                 throw new IllegalStateException("Index is pending to load");
@@ -428,12 +430,16 @@ public class Srf4j {
         return "OK".equals(output);
     }
 
-    private static File getFile(String path) throws URISyntaxException {
+    public static InputStream getFile(String path) throws URISyntaxException, FileNotFoundException {
+      return getFile(path, Srf4j.class.getClassLoader());
+    }
+
+    public static InputStream getFile(String path, ClassLoader classLoader) throws URISyntaxException, FileNotFoundException {
         if (path.startsWith("classpath:")) {
             path = path.substring("classpath:".length());
-            return new File(Objects.requireNonNull(Srf4j.class.getClassLoader().getResource(path)).getPath());
+            return classLoader.getResourceAsStream(path);
         } else {
-            return new File(new URI(path));
+            return new FileInputStream(new File(new URI(path)));
         }
     }
 
