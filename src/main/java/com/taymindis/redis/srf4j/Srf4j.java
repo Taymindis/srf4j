@@ -201,6 +201,10 @@ public class Srf4j {
 
 
     public static void tryConfigLettuceSearchFromDB(RedisFacade redisFacade, String configPath) {
+        tryConfigLettuceSearchFromDB(redisFacade, configPath, null);
+    }
+
+    public static void tryConfigLettuceSearchFromDB(RedisFacade redisFacade, String configPath, ClassLoader classLoader) {
         if (!(redisFacade instanceof LettuFacadeImpl ||
                 redisFacade instanceof LettuSentMasterFacadeImpl ||
                 redisFacade instanceof LettuClusterFacadeImpl)) {
@@ -224,7 +228,15 @@ public class Srf4j {
             String dbUrl = dbConfigs.remove("dbUrl");
             String driver = dbConfigs.remove("driver");
 
-            Class.forName(driver);
+            try {
+                if(classLoader == null) {
+                    Class.forName(driver);
+                } else {
+                    Class.forName(driver, true, classLoader);
+                }
+            } catch (ClassNotFoundException e) {
+                LOGGER.warn("Driver {} unable to load correctly ... ", driver);
+            }
 
             Properties dbProps = new Properties();
 
