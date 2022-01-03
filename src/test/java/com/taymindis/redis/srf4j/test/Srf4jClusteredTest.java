@@ -66,6 +66,47 @@ public class Srf4jClusteredTest {
     }
 
     @Test
+    public void testRedisFacadeClusterToListMap() {
+        try (RedisFacade facade = Srf4j.useLettuceCluster("localhost", 6379, false, null, null)) {
+            try (Session session = facade.createSession()) {
+                CommandBuilder searchCommandBuilder = new SearchCommandBuilder("idx/retailer/cust")
+                        .query("*")
+                        .addOpt(WITHSCORES)
+                        .addOpt(RETURN, "1", "firstName")
+//                        .addOpt(FILTER, "custId", "0", "3000")
+//                        .addOpt(NOCONTENT)
+                        ;
+                List<Map<String, String>> res = session
+                        .queryToListMap(searchCommandBuilder);
+
+                if (!res.isEmpty()) {
+                    System.out.println(objectMapper.writeValueAsString(res));
+
+                    for (Map<String, String> doc : res) {
+                        //                        doc.getScore()
+                        Assertions.assertNotNull(doc.get("score"));
+                        Assertions.assertNotNull(doc.get("firstName"));
+                    }
+                }
+
+                searchCommandBuilder.addOpt(NOCONTENT);
+                res = session
+                        .queryToListMap(searchCommandBuilder);
+
+                if (!res.isEmpty()) {
+                    System.out.println(objectMapper.writeValueAsString(res));
+
+                    for (Map<String, String> doc : res) {
+                        Assertions.assertNull(doc.get("firstName"));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    @Test
     public void testRedisFacadeClusterMultipleKeyPrefix() {
 
         Srf4j.Builder builder = Srf4j.createBuilder();

@@ -37,6 +37,7 @@ public interface Session extends BaseSession<String> {
     List<String> executeRawCommand(CommandBuilder customCommandBuilder) throws RedisCommandExecutionException,ExecutionException, InterruptedException;
 
     SearchResult<String,String> queryToSearchResult(CommandBuilder builder) throws RedisCommandExecutionException,ExecutionException, InterruptedException;
+    List<Map<String,String>> queryToListMap(CommandBuilder builder) throws RedisCommandExecutionException,ExecutionException, InterruptedException;
     List<Map<String, Object>> queryToAggregateResult(CommandBuilder builder) throws RedisCommandExecutionException,ExecutionException, InterruptedException;
 
     String executeForStatus(CommandBuilder customCommandBuilder) throws RedisCommandExecutionException,ExecutionException, InterruptedException;

@@ -5,6 +5,7 @@ import com.redislabs.lettusearch.output.SearchNoContentOutput;
 import com.redislabs.lettusearch.output.SearchOutput;
 import com.taymindis.redis.srf4j.impl.lettuce.output.AggregateToListMapOutput;
 import com.taymindis.redis.srf4j.impl.lettuce.output.GenericRawStringListOutput;
+import com.taymindis.redis.srf4j.impl.lettuce.output.SearchListMapOutput;
 import com.taymindis.redis.srf4j.intf.SearchResult;
 
 import com.taymindis.redis.srf4j.redisearch.CommandTypeExt;
@@ -148,6 +149,56 @@ class RedisFacadeOps {
             SearchResults<K, V> searchResults = async.get();
 
             return new LettuSearchResultImpl<>(searchResults);
+        }
+    }
+
+    static List<Map<String, String>> queryToListResult(ProtocolKeyword commandType, StatefulConnection<String, String> connection,
+                                                            String query) throws RedisCommandExecutionException, ExecutionException, InterruptedException {
+        return queryToListResult(commandType, connection, Arrays.asList(query.split("\\s")));
+    }
+
+
+    static List<Map<String, String>> queryToListResult(ProtocolKeyword commandType, StatefulConnection<String, String> connection,
+                                                            List<CharSequence> values) throws RedisCommandExecutionException, ExecutionException, InterruptedException {
+
+        String valString = String.join(" ", values).toUpperCase();
+
+        return queryToListResult(commandType, connection,
+                valString.contains(" NOCONTENT"),
+                valString.contains(" WITHSCORES"),
+                valString.contains(" WITHSORTKEYS"),
+                valString.contains(" WITHPAYLOADS"),
+                values
+        );
+    }
+
+    private static <K, V> List<Map<K,V>> queryToListResult(
+            ProtocolKeyword commandType, StatefulConnection<String, String> connection,
+            boolean noContent, boolean withScores, boolean withSortKeys, boolean withPayloads,
+            List<CharSequence> values)
+            throws RedisCommandExecutionException, ExecutionException, InterruptedException {
+
+        RedisCodec<String, String> codec = StringCodec.UTF8;
+        try (Stream<CharSequence> v = values.stream()) {
+            // Redis Cluster command ...
+            RedisCommand<String, String, List<Map<K, V>>> idxInfoCmd =
+                    new Command(commandType,
+                            // Cannot make it...
+                            noContent
+                                    ? new SearchNoContentOutput<>(codec, withScores)
+                                    : new SearchListMapOutput(codec, withScores, withSortKeys, withPayloads),
+                            new CommandArgs<>(codec)
+                                    .addValues(v.map(CharSequence::toString).collect(Collectors.toList())));
+
+            AsyncCommand<String, String, List<Map<K, V>>> async = new AsyncCommand<>(idxInfoCmd);
+
+            connection.dispatch(async);
+
+            async.await(-1, TimeUnit.SECONDS);
+
+            List<Map<K, V>> searchResults = async.get();
+
+            return searchResults;
         }
     }
 

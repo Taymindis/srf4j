@@ -202,6 +202,11 @@ public class LettuClusterSessionImpl extends BaseSessionImpl<String> implements 
     }
 
     @Override
+    public List<Map<String, String>> queryToListMap(CommandBuilder commandBuilder) throws RedisCommandExecutionException, ExecutionException, InterruptedException {
+        return RedisFacadeOps.queryToListResult(commandBuilder.getSr4JCommandTypeExt(), connection, commandBuilder.build());
+    }
+
+    @Override
     public SearchResult<String, String> queryToSearchResult(CommandBuilder commandBuilder) throws RedisCommandExecutionException,ExecutionException, InterruptedException {
         return RedisFacadeOps.queryToSearchResult(commandBuilder.getSr4JCommandTypeExt(), connection, commandBuilder.build());
     }

@@ -160,6 +160,10 @@ public class LettuSessionImpl extends BaseSessionImpl<String> implements Session
         return null;
     }
 
+    @Override
+    public List<Map<String, String>> queryToListMap(CommandBuilder commandBuilder) throws RedisCommandExecutionException, ExecutionException, InterruptedException {
+        return RedisFacadeOps.queryToListResult(commandBuilder.getSr4JCommandTypeExt(), connection, commandBuilder.build());
+    }
 
     @Override
     public SearchResult<String, String> queryToSearchResult(CommandBuilder commandBuilder) throws RedisCommandExecutionException,ExecutionException, InterruptedException {
