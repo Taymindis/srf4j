@@ -29,26 +29,27 @@ public class MapTypeOutput<K> extends CommandOutput<K, Object, Map<K, Object>> {
             key = (bytes == null) ? null : codec.decodeKey(bytes);
             return;
         }
+
         Object value = (bytes == null) ? null : codec.decodeValue(bytes);
         if (declTypeMapList.containsKey(key)) {
             SearchListMapTypeOutput.MapType mapType = declTypeMapList.get(key);
             try {
                 switch (mapType) {
                     case INT:
-                        value = Integer.parseInt((String) value);
+                        value = value != null ? Integer.parseInt((String) value) : null;
                         break;
                     case LONG:
-                        value = Long.parseLong((String) value);
+                        value = value != null ? Long.parseLong((String) value) : null;
                         break;
                     case DOUBLE:
-                        value = Double.parseDouble((String) value);
+                        value = value != null ? Double.parseDouble((String) value) : null;
                         break;
                     case FLOAT:
-                        value = Float.parseFloat((String) value);
+                        value = value != null ? Float.parseFloat((String) value) : null;
                         break;
                 }
             } catch (Exception e) {
-                logger.error(e.getMessage(),e);
+                logger.error(e.getMessage(), e);
             }
         }
 
