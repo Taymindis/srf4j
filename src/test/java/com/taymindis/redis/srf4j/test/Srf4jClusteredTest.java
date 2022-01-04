@@ -5,6 +5,7 @@ import com.redislabs.lettusearch.*;
 import com.taymindis.redis.srf4j.RedisDriver;
 import com.taymindis.redis.srf4j.RedisMode;
 import com.taymindis.redis.srf4j.Srf4j;
+import com.taymindis.redis.srf4j.impl.lettuce.output.SearchListMapTypeOutput;
 import com.taymindis.redis.srf4j.intf.*;
 import com.taymindis.redis.srf4j.redisearch.AggregateCommandBuilder;
 import com.taymindis.redis.srf4j.redisearch.CommandBuilder;
@@ -16,7 +17,10 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+
 import static com.taymindis.redis.srf4j.redisearch.CommandParam.*;
+
+import static com.taymindis.redis.srf4j.impl.lettuce.output.SearchListMapTypeOutput.MapType.INT;
 
 public class Srf4jClusteredTest {
 
@@ -30,7 +34,7 @@ public class Srf4jClusteredTest {
                 CommandBuilder searchCommandBuilder = new SearchCommandBuilder("idx/retailer/cust")
                         .query("@firstName:Dale")
                         .addOpt(WITHSCORES)
-                        .addOpt(FILTER, "custId", "1", "3000")
+//                        .addOpt(FILTER, "custId", "1", "3000")
 //                        .addOpt(NOCONTENT)
                         ;
                 SearchResult<String, String> res = session
@@ -72,7 +76,7 @@ public class Srf4jClusteredTest {
                 CommandBuilder searchCommandBuilder = new SearchCommandBuilder("idx/retailer/cust")
                         .query("*")
                         .addOpt(WITHSCORES)
-                        .addOpt(RETURN, "1", "firstName")
+//                        .addOpt(RETURN, "1", "firstName")
 //                        .addOpt(FILTER, "custId", "0", "3000")
 //                        .addOpt(NOCONTENT)
                         ;
@@ -88,16 +92,32 @@ public class Srf4jClusteredTest {
                         Assertions.assertNotNull(doc.get("firstName"));
                     }
                 }
-
-                searchCommandBuilder.addOpt(NOCONTENT);
-                res = session
-                        .queryToListMap(searchCommandBuilder);
+            }
+        } catch (Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+    @Test
+    public void testRedisFacadeClusterToListMapType() {
+        try (RedisFacade facade = Srf4j.useLettuceCluster("localhost", 6379, false, null, null)) {
+            try (Session session = facade.createSession()) {
+                CommandBuilder searchCommandBuilder = new SearchCommandBuilder("idx/retailer/cust")
+                        .query("*")
+                        .addOpt(WITHSCORES)
+//                        .addOpt(RETURN, "1", "firstName")
+//                        .addOpt(FILTER, "custId", "0", "3000")
+//                        .addOpt(NOCONTENT)
+                        ;
+                List<Map<String, Object>> res = session
+                        .queryToListMapType(searchCommandBuilder, Map.of("custId", INT));
 
                 if (!res.isEmpty()) {
                     System.out.println(objectMapper.writeValueAsString(res));
 
-                    for (Map<String, String> doc : res) {
-                        Assertions.assertNull(doc.get("firstName"));
+                    for (Map<String, Object> doc : res) {
+                        //                        doc.getScore()
+                        Assertions.assertNotNull(doc.get("score"));
+                        Assertions.assertNotNull(doc.get("firstName"));
                     }
                 }
             }

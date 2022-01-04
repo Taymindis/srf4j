@@ -1,6 +1,7 @@
 package com.taymindis.redis.srf4j.intf;
 
 
+import com.taymindis.redis.srf4j.impl.lettuce.output.SearchListMapTypeOutput;
 import com.taymindis.redis.srf4j.redisearch.CommandTypeExt;
 import com.taymindis.redis.srf4j.redisearch.CommandBuilder;
 import io.lettuce.core.RedisCommandExecutionException;
@@ -38,6 +39,9 @@ public interface Session extends BaseSession<String> {
 
     SearchResult<String,String> queryToSearchResult(CommandBuilder builder) throws RedisCommandExecutionException,ExecutionException, InterruptedException;
     List<Map<String,String>> queryToListMap(CommandBuilder builder) throws RedisCommandExecutionException,ExecutionException, InterruptedException;
+    List<Map<String,Object>> queryToListMapType(CommandBuilder builder, Map<String, SearchListMapTypeOutput.MapType> mapClass) throws RedisCommandExecutionException,ExecutionException, InterruptedException;
+//    List<Map<String,Object>> queryToListClass(CommandBuilder builder, Class<?> clazz) throws RedisCommandExecutionException,ExecutionException, InterruptedException;
+
     List<Map<String, Object>> queryToAggregateResult(CommandBuilder builder) throws RedisCommandExecutionException,ExecutionException, InterruptedException;
 
     String executeForStatus(CommandBuilder customCommandBuilder) throws RedisCommandExecutionException,ExecutionException, InterruptedException;

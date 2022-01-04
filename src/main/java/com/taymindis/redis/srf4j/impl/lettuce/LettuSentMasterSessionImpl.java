@@ -1,5 +1,6 @@
 package com.taymindis.redis.srf4j.impl.lettuce;
 
+import com.taymindis.redis.srf4j.impl.lettuce.output.SearchListMapTypeOutput;
 import com.taymindis.redis.srf4j.intf.SearchResult;
 import com.taymindis.redis.srf4j.intf.Session;
 import com.taymindis.redis.srf4j.redisearch.CommandBuilder;
@@ -233,6 +234,11 @@ public class LettuSentMasterSessionImpl extends BaseSessionImpl<String> implemen
     @Override
     public List<Map<String, String>> queryToListMap(CommandBuilder commandBuilder) throws RedisCommandExecutionException, ExecutionException, InterruptedException {
         return RedisFacadeOps.queryToListResult(commandBuilder.getSr4JCommandTypeExt(), connection, commandBuilder.build());
+    }
+
+    @Override
+    public List<Map<String, Object>> queryToListMapType(CommandBuilder commandBuilder, Map<String, SearchListMapTypeOutput.MapType> mapClass) throws RedisCommandExecutionException, ExecutionException, InterruptedException {
+        return RedisFacadeOps.queryToListWithTypeResult(commandBuilder.getSr4JCommandTypeExt(), connection, commandBuilder.build(), mapClass);
     }
 
     @Override
